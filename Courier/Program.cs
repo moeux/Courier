@@ -1,4 +1,6 @@
-﻿using Courier.Configuration;
+﻿using AutoCommand.Handler;
+using Courier.Commands;
+using Courier.Configuration;
 using Courier.Services;
 using Discord;
 using Discord.WebSocket;
@@ -42,6 +44,9 @@ internal static class Program
                 Resources.FeedsRequired)
             .PostConfigure(options => { options.FilePath = Path.GetFullPath(options.FilePath); });
 
+        builder.Services.AddTransient<ICommandHandler, AddFeedCommand>();
+        builder.Services.AddTransient<ICommandHandler, RemoveCommand>();
+        builder.Services.AddTransient<ICommandHandler, ListCommand>();
         builder.Services
             .AddSingleton(new DiscordSocketConfig { GatewayIntents = GatewayIntents.None })
             .AddSingleton<DiscordSocketClient>();
