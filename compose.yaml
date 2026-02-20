@@ -1,10 +1,12 @@
 ﻿services:
   courier:
+    container_name: courier
     image: courier
     environment:
       Courier__Bot__Token: ""
-      Courier__Feed__FilePath: ""
+      Courier__Feed__FilePath: ${PWD}/feeds.json
+    volumes:
+      - ${PWD}/feeds.json:${PWD}/feeds.json:ro
     build:
       context: .
       dockerfile: Courier/Dockerfile
-
