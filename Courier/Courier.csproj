@@ -15,6 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="AutoCommand" Version="1.0.3"/>
         <PackageReference Include="Discord.Net" Version="3.18.0"/>
         <PackageReference Include="Html2Markdown" Version="7.1.2.20"/>
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.3"/>
