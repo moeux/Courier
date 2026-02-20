@@ -1,0 +1,10 @@
+﻿services:
+  courier:
+    image: courier
+    environment:
+      Courier__Bot__Token: ""
+      Courier__Feed__FilePath: ""
+    build:
+      context: .
+      dockerfile: Courier/Dockerfile
+
