@@ -1,0 +1,46 @@
+{
+  "name": "add",
+  "description": "Add a feed to be monitored",
+  "isDefaultPermission": true,
+  "isNsfw": false,
+  "integrationTypes": [
+    "GuildInstall"
+  ],
+  "contextTypes": [
+    "Guild"
+  ],
+  "options": [
+    {
+      "name": "name",
+      "description": "The name of the feed",
+      "type": "String",
+      "isRequired": true,
+      "isDefault": true,
+      "isAutoComplete": false
+    },
+    {
+      "name": "uri",
+      "description": "The link to the feed",
+      "type": "String",
+      "isRequired": true,
+      "isDefault": false,
+      "isAutoComplete": false
+    },
+    {
+      "name": "channel",
+      "description": "The channel where to post updates",
+      "type": "Channel",
+      "isRequired": true,
+      "isDefault": false,
+      "isAutoComplete": false
+    },
+    {
+      "name": "interval",
+      "description": "The interval to check for updates, in minutes",
+      "type": "Integer",
+      "isRequired": false,
+      "isDefault": false,
+      "isAutoComplete": false
+    }
+  ]
+}

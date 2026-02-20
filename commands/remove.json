@@ -1,0 +1,33 @@
+{
+  "name": "remove",
+  "description": "Remove a feed",
+  "isDefaultPermission": true,
+  "isNsfw": false,
+  "defaultMemberPermissions": [
+    "Administrator"
+  ],
+  "integrationTypes": [
+    "GuildInstall"
+  ],
+  "contextTypes": [
+    "Guild"
+  ],
+  "options": [
+    {
+      "name": "name",
+      "description": "The name of the feed",
+      "type": "String",
+      "isRequired": true,
+      "isDefault": true,
+      "isAutoComplete": false
+    },
+    {
+      "name": "channel",
+      "description": "The channel to remove the feed from",
+      "type": "Channel",
+      "isRequired": true,
+      "isDefault": false,
+      "isAutoComplete": false
+    }
+  ]
+}

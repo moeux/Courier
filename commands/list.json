@@ -1,0 +1,22 @@
+{
+  "name": "list",
+  "description": "List all feeds",
+  "isDefaultPermission": true,
+  "isNsfw": false,
+  "integrationTypes": [
+    "GuildInstall"
+  ],
+  "contextTypes": [
+    "Guild"
+  ],
+  "options": [
+    {
+      "name": "channel",
+      "description": "The channel to look up feeds in",
+      "type": "Channel",
+      "isRequired": true,
+      "isDefault": false,
+      "isAutoComplete": false
+    }
+  ]
+}
