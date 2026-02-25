@@ -56,7 +56,7 @@ public class ListCommand(IOptionsMonitor<FeedOptions> optionsMonitor) : ICommand
             .SelectMany(f => f);
         var embed = new EmbedBuilder()
             .WithTitle("Feeds")
-            .WithColor(Color.Blue)
+            .WithColor(new Color(242, 125, 22))
             .WithFields(fields)
             .Build();
 

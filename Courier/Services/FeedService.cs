@@ -121,7 +121,7 @@ public class FeedService(
                 .WithTitle(item.Title.Text.ToMarkdown().Truncate(EmbedBuilder.MaxTitleLength))
                 .WithDescription(item.Summary.Text.ToMarkdown().Truncate(EmbedBuilder.MaxDescriptionLength))
                 .WithTimestamp(item.PublishDate)
-                .WithColor(Color.Purple);
+                .WithColor(new Color(242, 125, 22));
 
             embeds.Add(embedBuilder.Build());
         }
