@@ -67,7 +67,9 @@ public class FeedService(
 
             syndicationFeed.Items = syndicationFeed.Items
                 .Where(item => item.PublishDate <= DateTimeOffset.UtcNow)
-                .Where(item => item.PublishDate >= feed.LastUpdate).ToList();
+                .Where(item => item.PublishDate >= feed.LastUpdate)
+                .OrderBy(item => item.PublishDate)
+                .ToList();
 
             if (!syndicationFeed.Items.Any()) return;
 
