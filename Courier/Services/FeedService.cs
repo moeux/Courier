@@ -44,7 +44,7 @@ public class FeedService(
     private Timer CreateTimer(Feed feed, CancellationToken cancellationToken = default)
     {
         var timer = new Timer(TimeSpan.FromSeconds(feed.Interval));
-        timer.Elapsed += async (sender, _) => await ProcessFeed(sender as Timer, feed, cancellationToken);
+        timer.Elapsed += async (sender, _) => await ProcessFeedAsync(sender as Timer, feed, cancellationToken);
         timer.Enabled = true;
 
         logger.LogInformation(
@@ -54,13 +54,13 @@ public class FeedService(
         return timer;
     }
 
-    private async Task ProcessFeed(Timer? timer, Feed feed, CancellationToken cancellationToken)
+    private async Task ProcessFeedAsync(Timer? timer, Feed feed, CancellationToken cancellationToken)
     {
         timer?.Stop();
 
         try
         {
-            var response = await GetFeed(feed.Uri, cancellationToken);
+            var response = await GetFeedAsync(feed.Uri, cancellationToken);
             using var reader =
                 XmlReader.Create(new StringReader(response), new XmlReaderSettings { CloseInput = true });
             var syndicationFeed = SyndicationFeed.Load(reader);
@@ -76,7 +76,7 @@ public class FeedService(
             logger.LogInformation("Sending {Count} feed items to channel #{ChannelId}.",
                 syndicationFeed.Items.Count(), feed.ChannelId);
 
-            await SendMessage(feed.ChannelId, syndicationFeed, cancellationToken);
+            await SendMessageAsync(feed.ChannelId, syndicationFeed, cancellationToken);
             feed.LastUpdate = DateTimeOffset.UtcNow;
         }
         finally
@@ -85,14 +85,17 @@ public class FeedService(
         }
     }
 
-    private static async Task<string> GetFeed(string uri, CancellationToken cancellationToken = default)
+    private static async Task<string> GetFeedAsync(string uri, CancellationToken cancellationToken = default)
     {
         using var client = new HttpClient();
         var response = await client.GetStringAsync(uri, cancellationToken);
         return response.Replace("&shy;", "");
     }
 
-    private async Task SendMessage(ulong channelId, SyndicationFeed feed, CancellationToken cancellationToken = default)
+    private async Task SendMessageAsync(
+        ulong channelId, 
+        SyndicationFeed feed, 
+        CancellationToken cancellationToken = default)
     {
         var channel = await client.GetChannelAsync(channelId, new RequestOptions
         {
