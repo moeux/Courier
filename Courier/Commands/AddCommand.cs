@@ -1,5 +1,6 @@
 using AutoCommand.Handler;
 using Courier.Configuration;
+using Courier.Extensions;
 using Courier.Models;
 using Courier.Utilities;
 using Discord;
@@ -24,33 +25,27 @@ public class AddCommand(IOptionsMonitor<FeedOptions> optionsMonitor, DiscordSock
         if (!Validate<string>(commandOptions.First(option => option.Name == "name"), out var name) ||
             name is null)
         {
-            await command.RespondAsync(Resources.AddCommandNameOptionRequired, ephemeral: true,
-                options: new RequestOptions
-                {
-                    CancelToken = cancellationToken
-                });
+            await command.RespondEphemeralAsync(
+                Resources.AddCommandNameOptionRequired,
+                cancellationToken: cancellationToken);
             return;
         }
 
         if (!Validate<Uri>(commandOptions.First(option => option.Name == "uri"), out var uri) ||
             uri is null)
         {
-            await command.RespondAsync(Resources.AddCommandUriOptionRequired, ephemeral: true,
-                options: new RequestOptions
-                {
-                    CancelToken = cancellationToken
-                });
+            await command.RespondEphemeralAsync(
+                Resources.AddCommandUriOptionRequired,
+                cancellationToken: cancellationToken);
             return;
         }
 
         if (!Validate<IGuildChannel>(commandOptions.First(option => option.Name == "channel"), out var channel) ||
             channel is null)
         {
-            await command.RespondAsync(Resources.AddCommandChannelOptionRequired, ephemeral: true,
-                options: new RequestOptions
-                {
-                    CancelToken = cancellationToken
-                });
+            await command.RespondEphemeralAsync(
+                Resources.AddCommandChannelOptionRequired,
+                cancellationToken: cancellationToken);
             return;
         }
 
@@ -66,11 +61,9 @@ public class AddCommand(IOptionsMonitor<FeedOptions> optionsMonitor, DiscordSock
         };
 
         await JsonWriter.UpdateFeedsAsync(feeds, optionsMonitor.CurrentValue.FilePath, cancellationToken);
-
-        await command.RespondAsync(Resources.AddCommandFeedAdded, ephemeral: true, options: new RequestOptions
-        {
-            CancelToken = cancellationToken
-        });
+        await command.RespondEphemeralAsync(
+            Resources.AddCommandFeedAdded,
+            cancellationToken: cancellationToken);
     }
 
     public string CommandName => "add";

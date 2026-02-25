@@ -23,13 +23,9 @@ public class ListCommand(IOptionsMonitor<FeedOptions> optionsMonitor) : ICommand
 
         if (command.Data.Options.First(option => option.Name == "channel")?.Value is not IGuildChannel channel)
         {
-            await command.RespondAsync(
+            await command.RespondEphemeralAsync(
                 Resources.ListCommandChannelOptionRequired,
-                ephemeral: true,
-                options: new RequestOptions
-                {
-                    CancelToken = cancellationToken
-                });
+                cancellationToken: cancellationToken);
             return;
         }
 

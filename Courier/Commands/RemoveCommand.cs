@@ -1,5 +1,6 @@
 using AutoCommand.Handler;
 using Courier.Configuration;
+using Courier.Extensions;
 using Courier.Models;
 using Courier.Utilities;
 using Discord;
@@ -18,26 +19,18 @@ public class RemoveCommand(IOptionsMonitor<FeedOptions> optionsMonitor) : IComma
     {
         if (command.Data.Options.First(option => option.Name == "channel")?.Value is not IGuildChannel channel)
         {
-            await command.RespondAsync(
+            await command.RespondEphemeralAsync(
                 Resources.RemoveCommandChannelOptionRequired,
-                ephemeral: true,
-                options: new RequestOptions
-                {
-                    CancelToken = cancellationToken
-                });
+                cancellationToken: cancellationToken);
             return;
         }
 
         if (command.Data.Options.First(option => option.Name == "name")?.Value is not string name ||
             string.IsNullOrWhiteSpace(name))
         {
-            await command.RespondAsync(
+            await command.RespondEphemeralAsync(
                 Resources.RemoveCommandNameOptionRequired,
-                ephemeral: true,
-                options: new RequestOptions
-                {
-                    CancelToken = cancellationToken
-                });
+                cancellationToken: cancellationToken);
             return;
         }
 
@@ -46,24 +39,16 @@ public class RemoveCommand(IOptionsMonitor<FeedOptions> optionsMonitor) : IComma
 
         if (removedFeeds == 0)
         {
-            await command.RespondAsync(
+            await command.RespondEphemeralAsync(
                 Resources.RemoveCommandNoFeedsFound,
-                ephemeral: true,
-                options: new RequestOptions
-                {
-                    CancelToken = cancellationToken
-                });
+                cancellationToken: cancellationToken);
             return;
         }
 
         await JsonWriter.UpdateFeedsAsync(feeds, optionsMonitor.CurrentValue.FilePath, cancellationToken);
-        await command.RespondAsync(
+        await command.RespondEphemeralAsync(
             Resources.RemoveCommandFeedRemoved,
-            ephemeral: true,
-            options: new RequestOptions
-            {
-                CancelToken = cancellationToken
-            });
+            cancellationToken: cancellationToken);
     }
 
     public string CommandName => "remove";
