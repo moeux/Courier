@@ -19,7 +19,9 @@
       "type": "String",
       "isRequired": true,
       "isDefault": true,
-      "isAutoComplete": false
+      "isAutoComplete": false,
+      "minLength": 1,
+      "maxLength": 1024
     },
     {
       "name": "channel",

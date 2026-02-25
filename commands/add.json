@@ -16,7 +16,9 @@
       "type": "String",
       "isRequired": true,
       "isDefault": true,
-      "isAutoComplete": false
+      "isAutoComplete": false,
+      "minLength": 1,
+      "maxLength": 1024
     },
     {
       "name": "uri",
@@ -24,7 +26,9 @@
       "type": "String",
       "isRequired": true,
       "isDefault": false,
-      "isAutoComplete": false
+      "isAutoComplete": false,
+      "minLength": 1,
+      "maxLength": 1024
     },
     {
       "name": "channel",
@@ -40,7 +44,9 @@
       "type": "Integer",
       "isRequired": false,
       "isDefault": false,
-      "isAutoComplete": false
+      "isAutoComplete": false,
+      "minValue": 1,
+      "maxValue": 2147483647
     }
   ]
 }

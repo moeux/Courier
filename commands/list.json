@@ -15,8 +15,18 @@
       "description": "The channel to look up feeds in",
       "type": "Channel",
       "isRequired": true,
-      "isDefault": false,
+      "isDefault": true,
       "isAutoComplete": false
+    },
+    {
+      "name": "page",
+      "description": "The page to display",
+      "type": "Integer",
+      "isRequired": false,
+      "isDefault": false,
+      "isAutoComplete": false,
+      "minValue": 1,
+      "maxValue": 2147483647
     }
   ]
 }
