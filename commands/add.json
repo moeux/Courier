@@ -15,8 +15,6 @@
       "description": "The name of the feed",
       "type": "String",
       "isRequired": true,
-      "isDefault": true,
-      "isAutoComplete": false,
       "minLength": 1,
       "maxLength": 1024
     },
@@ -25,8 +23,6 @@
       "description": "The link to the feed",
       "type": "String",
       "isRequired": true,
-      "isDefault": false,
-      "isAutoComplete": false,
       "minLength": 1,
       "maxLength": 1024
     },
@@ -34,17 +30,13 @@
       "name": "channel",
       "description": "The channel where to post updates",
       "type": "Channel",
-      "isRequired": true,
-      "isDefault": false,
-      "isAutoComplete": false
+      "isRequired": true
     },
     {
       "name": "interval",
       "description": "The interval to check for updates, in minutes",
       "type": "Integer",
       "isRequired": false,
-      "isDefault": false,
-      "isAutoComplete": false,
       "minValue": 1,
       "maxValue": 2147483647
     }

@@ -14,17 +14,13 @@
       "name": "channel",
       "description": "The channel to look up feeds in",
       "type": "Channel",
-      "isRequired": true,
-      "isDefault": true,
-      "isAutoComplete": false
+      "isRequired": true
     },
     {
       "name": "page",
       "description": "The page to display",
       "type": "Integer",
       "isRequired": false,
-      "isDefault": false,
-      "isAutoComplete": false,
       "minValue": 1,
       "maxValue": 2147483647
     }
