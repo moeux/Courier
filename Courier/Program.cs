@@ -52,7 +52,7 @@ internal static class Program
         builder.Services.AddTransient<ICommandHandler, RemoveCommand>();
         builder.Services.AddTransient<ICommandHandler, ListCommand>();
         builder.Services
-            .AddSingleton(new DiscordSocketConfig { GatewayIntents = GatewayIntents.None })
+            .AddSingleton(new DiscordSocketConfig { GatewayIntents = GatewayIntents.Guilds })
             .AddSingleton<DiscordSocketClient>();
         builder.Services.AddHostedService<BotService>();
         builder.Services.AddHostedService<FeedService>();
