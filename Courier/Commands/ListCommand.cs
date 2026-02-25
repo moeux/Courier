@@ -33,21 +33,7 @@ public class ListCommand(IOptionsMonitor<FeedOptions> optionsMonitor) : ICommand
 
         var fields = feeds
             .Where(feed => feed.ChannelId == channel.Id)
-            .SelectMany<Feed, EmbedFieldBuilder>(feed =>
-            [
-                new EmbedFieldBuilder()
-                    .WithName("Name")
-                    .WithValue(feed.Name.Truncate(EmbedFieldBuilder.MaxFieldValueLength))
-                    .WithIsInline(false),
-                new EmbedFieldBuilder()
-                    .WithName("URI")
-                    .WithValue(feed.Uri.Truncate(EmbedFieldBuilder.MaxFieldValueLength))
-                    .WithIsInline(true),
-                new EmbedFieldBuilder()
-                    .WithName("Interval")
-                    .WithValue(feed.Interval)
-                    .WithIsInline(true)
-            ])
+            .SelectMany(CreateEmbedFields)
             .Chunk(EmbedBuilder.MaxFieldCount)
             .Skip((int)(page - 1))
             .Take(1)
@@ -65,4 +51,23 @@ public class ListCommand(IOptionsMonitor<FeedOptions> optionsMonitor) : ICommand
     }
 
     public string CommandName => "list";
+
+    private static EmbedFieldBuilder[] CreateEmbedFields(Feed feed)
+    {
+        return
+        [
+            new EmbedFieldBuilder()
+                .WithName("Name")
+                .WithValue(feed.Name.Truncate(EmbedFieldBuilder.MaxFieldValueLength))
+                .WithIsInline(false),
+            new EmbedFieldBuilder()
+                .WithName("URI")
+                .WithValue(feed.Uri.Truncate(EmbedFieldBuilder.MaxFieldValueLength))
+                .WithIsInline(true),
+            new EmbedFieldBuilder()
+                .WithName("Interval")
+                .WithValue(feed.Interval)
+                .WithIsInline(true)
+        ];
+    }
 }
