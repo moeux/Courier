@@ -60,4 +60,7 @@
     <data name="ListCommandNoFeedsFound" xml:space="preserve">
         <value>There are no feeds matching the criteria.</value>
     </data>
+    <data name="AddCommandFeedAlreadyExists" xml:space="preserve">
+        <value>This feed already exists.</value>
+    </data>
 </root>

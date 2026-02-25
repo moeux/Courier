@@ -64,16 +64,22 @@ public class AddCommand(IOptionsMonitor<FeedOptions> optionsMonitor, DiscordSock
             return;
         }
 
-        var feeds = new List<Feed>(optionsMonitor.CurrentValue.Feeds)
+        var feeds = new HashSet<Feed>(optionsMonitor.CurrentValue.Feeds);
+        var newFeed = new Feed
         {
-            new()
-            {
-                Name = name,
-                Uri = uri.AbsoluteUri,
-                ChannelId = channel.Id,
-                Interval = interval
-            }
+            Name = name,
+            Uri = uri.AbsoluteUri,
+            ChannelId = channel.Id,
+            Interval = interval
         };
+
+        if (!feeds.Add(newFeed))
+        {
+            await command.RespondEphemeralAsync(
+                Resources.AddCommandFeedAlreadyExists,
+                cancellationToken: cancellationToken);
+            return;
+        }
 
         await JsonWriter.UpdateFeedsAsync(feeds, optionsMonitor.CurrentValue.FilePath, cancellationToken);
         await command.RespondEphemeralAsync(
