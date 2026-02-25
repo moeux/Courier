@@ -12,7 +12,9 @@ namespace Courier.Commands;
 public class AddCommand(IOptionsMonitor<FeedOptions> optionsMonitor, DiscordSocketClient client) : ICommandHandler
 {
     public async Task HandleAsync(
-        ILogger logger, SocketSlashCommand command, CancellationToken cancellationToken = new())
+        ILogger logger,
+        SocketSlashCommand command,
+        CancellationToken cancellationToken = new())
     {
         var commandOptions = command.Data.Options;
         var interval = commandOptions.First(o => o.Name == "interval")?.Value is long l

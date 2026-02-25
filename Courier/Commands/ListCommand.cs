@@ -12,7 +12,9 @@ namespace Courier.Commands;
 public class ListCommand(IOptionsMonitor<FeedOptions> optionsMonitor) : ICommandHandler
 {
     public async Task HandleAsync(
-        ILogger logger, SocketSlashCommand command, CancellationToken cancellationToken = new())
+        ILogger logger,
+        SocketSlashCommand command,
+        CancellationToken cancellationToken = new())
     {
         var feeds = optionsMonitor.CurrentValue.Feeds;
         var page = command.Data.Options.First(o => o.Name == "page")?.Value is long l

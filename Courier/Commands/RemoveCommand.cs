@@ -11,7 +11,9 @@ namespace Courier.Commands;
 
 public class RemoveCommand(IOptionsMonitor<FeedOptions> optionsMonitor) : ICommandHandler
 {
-    public async Task HandleAsync(ILogger logger, SocketSlashCommand command,
+    public async Task HandleAsync(
+        ILogger logger,
+        SocketSlashCommand command,
         CancellationToken cancellationToken = new())
     {
         if (command.Data.Options.First(option => option.Name == "channel")?.Value is not IGuildChannel channel)

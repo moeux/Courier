@@ -93,8 +93,8 @@ public class FeedService(
     }
 
     private async Task SendMessageAsync(
-        ulong channelId, 
-        SyndicationFeed feed, 
+        ulong channelId,
+        SyndicationFeed feed,
         CancellationToken cancellationToken = default)
     {
         var channel = await client.GetChannelAsync(channelId, new RequestOptions
