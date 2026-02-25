@@ -43,7 +43,7 @@ public class FeedService(
 
     private Timer CreateTimer(Feed feed, CancellationToken cancellationToken = default)
     {
-        var timer = new Timer(TimeSpan.FromSeconds(feed.Interval));
+        var timer = new Timer(TimeSpan.FromMinutes(feed.Interval));
         timer.Elapsed += async (sender, _) => await ProcessFeedAsync(sender as Timer, feed, cancellationToken);
         timer.Enabled = true;
 
