@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.ServiceModel.Syndication;
 using System.Xml;
 using Courier.Configuration;
@@ -12,29 +13,45 @@ using Timer = System.Timers.Timer;
 
 namespace Courier.Services;
 
-public class FeedService(IOptions<FeedOptions> options, ILogger<FeedService> logger, DiscordSocketClient client)
+public class FeedService(
+    IOptionsMonitor<FeedOptions> optionsMonitor,
+    ILogger<FeedService> logger,
+    DiscordSocketClient client)
     : BackgroundService
 {
+    private readonly ConcurrentDictionary<Feed, Timer> _feedTimerMap = new();
+
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        var feedTimerMap = options.Value.Feeds.ToDictionary(
-            feed => feed,
-            feed =>
-            {
-                var timer = new Timer(TimeSpan.FromMinutes(feed.Interval));
-                timer.Elapsed += async (sender, _) => await ProcessFeed(sender as Timer, feed, cancellationToken);
-                timer.Enabled = true;
+        optionsMonitor.OnChange(options => UpdateTimers(options.Feeds, cancellationToken));
 
-                logger.LogInformation(
-                    "Setup feed '{Name}' ({Uri}) with interval {Interval} minutes and channel #{ChannelId}.",
-                    feed.Name, feed.Uri, feed.Interval, feed.ChannelId);
-
-                return timer;
-            });
+        UpdateTimers(optionsMonitor.CurrentValue.Feeds, cancellationToken);
 
         await Task.Delay(Timeout.Infinite, cancellationToken);
 
-        foreach (var timer in feedTimerMap.Values) timer.Dispose();
+        foreach (var timer in _feedTimerMap.Values) timer.Dispose();
+    }
+
+    private void UpdateTimers(IEnumerable<Feed> feeds, CancellationToken cancellationToken = default)
+    {
+        foreach (var timer in _feedTimerMap.Values) timer.Dispose();
+
+        _feedTimerMap.Clear();
+
+        foreach (var feed in feeds) _feedTimerMap[feed] = CreateTimer(feed, cancellationToken);
+    }
+
+    private Timer CreateTimer(Feed feed, CancellationToken cancellationToken = default)
+    {
+        var timer = new Timer(TimeSpan.FromSeconds(feed.Interval));
+        timer.Elapsed += async (sender, _) => await ProcessFeed(sender as Timer, feed, cancellationToken);
+        timer.Enabled = true;
+
+        logger.LogInformation(
+            "Setup feed '{Name}' ({Uri}) with interval {Interval} minutes and channel #{ChannelId}.",
+            feed.Name, feed.Uri, feed.Interval, feed.ChannelId);
+
+        return timer;
     }
 
     private async Task ProcessFeed(Timer? timer, Feed feed, CancellationToken cancellationToken)
