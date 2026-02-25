@@ -23,6 +23,20 @@ public class AddCommand(IOptionsMonitor<FeedOptions> optionsMonitor, DiscordSock
             .Select(option => option.Value)
             .Cast<long>()
             .FirstOrDefault(Feed.DefaultInterval);
+        var channel = await command.Data.Options
+            .Where(option => option.Name == "channel")
+            .Select(option => option.Value)
+            .OfType<ITextChannel>()
+            .ToAsyncEnumerable()
+            .FirstOrDefaultAwaitAsync(async textChannel =>
+            {
+                var user = await textChannel.GetUserAsync(
+                    client.CurrentUser.Id,
+                    options: new RequestOptions { CancelToken = cancellationToken });
+                var permissions = user?.GetPermissions(textChannel);
+
+                return permissions is { SendMessages: true, EmbedLinks: true };
+            }, cancellationToken);
 
         if (!Validate<string>(commandOptions.First(option => option.Name == "name"), out var name) ||
             name is null)
@@ -42,8 +56,7 @@ public class AddCommand(IOptionsMonitor<FeedOptions> optionsMonitor, DiscordSock
             return;
         }
 
-        if (!Validate<IGuildChannel>(commandOptions.First(option => option.Name == "channel"), out var channel) ||
-            channel is null)
+        if (channel is null)
         {
             await command.RespondEphemeralAsync(
                 Resources.AddCommandChannelOptionRequired,
@@ -70,7 +83,7 @@ public class AddCommand(IOptionsMonitor<FeedOptions> optionsMonitor, DiscordSock
 
     public string CommandName => "add";
 
-    private bool Validate<T>(SocketSlashCommandDataOption option, out T? value) where T : class
+    private static bool Validate<T>(SocketSlashCommandDataOption option, out T? value) where T : class
     {
         switch (option.Value)
         {
@@ -84,13 +97,6 @@ public class AddCommand(IOptionsMonitor<FeedOptions> optionsMonitor, DiscordSock
             case long l when typeof(T) == typeof(long):
                 value = Convert.ChangeType(l, typeof(T)) as T;
                 return l > 0;
-            case ITextChannel c when typeof(T) == typeof(IGuildChannel):
-                value = Convert.ChangeType(c, typeof(T)) as T;
-                return c.GetPermissionOverwrite(client.CurrentUser) is
-                {
-                    SendMessages: PermValue.Allow,
-                    EmbedLinks: PermValue.Allow
-                };
         }
 
         value = null;
