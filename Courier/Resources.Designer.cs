@@ -80,5 +80,35 @@ namespace Courier {
                 return ResourceManager.GetString("AddCommandFeedAdded", resourceCulture);
             }
         }
+        
+        internal static string ListCommandChannelOptionRequired {
+            get {
+                return ResourceManager.GetString("ListCommandChannelOptionRequired", resourceCulture);
+            }
+        }
+        
+        internal static string RemoveCommandChannelOptionRequired {
+            get {
+                return ResourceManager.GetString("RemoveCommandChannelOptionRequired", resourceCulture);
+            }
+        }
+        
+        internal static string RemoveCommandNameOptionRequired {
+            get {
+                return ResourceManager.GetString("RemoveCommandNameOptionRequired", resourceCulture);
+            }
+        }
+        
+        internal static string RemoveCommandNoFeedsFound {
+            get {
+                return ResourceManager.GetString("RemoveCommandNoFeedsFound", resourceCulture);
+            }
+        }
+        
+        internal static string RemoveCommandFeedRemoved {
+            get {
+                return ResourceManager.GetString("RemoveCommandFeedRemoved", resourceCulture);
+            }
+        }
     }
 }

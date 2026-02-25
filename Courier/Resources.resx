@@ -31,7 +31,7 @@
         <value>Feeds file is required.</value>
     </data>
     <data name="AddCommandNameOptionRequired" xml:space="preserve">
-        <value>Please specify a name for the feed.</value>
+        <value>Please specify a name for the feed to add.</value>
     </data>
     <data name="AddCommandUriOptionRequired" xml:space="preserve">
         <value>Please specify a valid URI to retrieve the feed from.</value>
@@ -41,5 +41,20 @@
     </data>
     <data name="AddCommandFeedAdded" xml:space="preserve">
         <value>Feed added successfully.</value>
+    </data>
+    <data name="ListCommandChannelOptionRequired" xml:space="preserve">
+        <value>Please specify an existing channel to list the feeds for.</value>
+    </data>
+    <data name="RemoveCommandChannelOptionRequired" xml:space="preserve">
+        <value>Please specify an existing channel to remove the feed from.</value>
+    </data>
+    <data name="RemoveCommandNameOptionRequired" xml:space="preserve">
+        <value>Please specify a name for the feed to remove.</value>
+    </data>
+    <data name="RemoveCommandNoFeedsFound" xml:space="preserve">
+        <value>No feeds were found matching the criteria.</value>
+    </data>
+    <data name="RemoveCommandFeedRemoved" xml:space="preserve">
+        <value>Feed removed successfully</value>
     </data>
 </root>
