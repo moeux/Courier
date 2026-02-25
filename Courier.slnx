@@ -4,6 +4,7 @@
         <File Path="commands/add.json"/>
         <File Path="commands/remove.json"/>
         <File Path="commands/list.json"/>
+        <File Path="feeds.json"/>
     </Folder>
     <Project Path="Courier/Courier.csproj"/>
 </Solution>
