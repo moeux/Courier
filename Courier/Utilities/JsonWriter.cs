@@ -13,6 +13,8 @@ public static class JsonWriter
         await using var streamWriter = new StreamWriter(filePath);
         await using var jsonTextWriter = new JsonTextWriter(streamWriter);
 
+        jsonTextWriter.Formatting = Formatting.Indented;
+
         await jsonTextWriter.WriteStartObjectAsync(cancellationToken);
         await jsonTextWriter.WritePropertyNameAsync("Feeds", cancellationToken);
         await jsonTextWriter.WriteStartArrayAsync(cancellationToken);
@@ -24,7 +26,7 @@ public static class JsonWriter
             await jsonTextWriter.WriteValueAsync(feed.Name, cancellationToken);
             await jsonTextWriter.WritePropertyNameAsync("Uri", cancellationToken);
             await jsonTextWriter.WriteValueAsync(feed.Uri, cancellationToken);
-            await jsonTextWriter.WritePropertyNameAsync("Channel", cancellationToken);
+            await jsonTextWriter.WritePropertyNameAsync("ChannelId", cancellationToken);
             await jsonTextWriter.WriteValueAsync(feed.ChannelId, cancellationToken);
             await jsonTextWriter.WritePropertyNameAsync("Interval", cancellationToken);
             await jsonTextWriter.WriteValueAsync(feed.Interval, cancellationToken);
