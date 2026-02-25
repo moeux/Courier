@@ -91,8 +91,10 @@ public class AddCommand(IOptionsMonitor<FeedOptions> optionsMonitor, DiscordSock
                 value = Convert.ChangeType(s, typeof(T)) as T;
                 return !string.IsNullOrWhiteSpace(s);
             case string u when typeof(T) == typeof(Uri):
-                var isValid = Uri.TryCreate(u.Trim(), UriKind.Absolute, out var uri);
-                value = Convert.ChangeType(uri?.AbsolutePath, typeof(T)) as T;
+                u = u.Trim();
+                u = u.StartsWith("https://") || u.StartsWith("http://") ? u : "https://" + u;
+                var isValid = Uri.TryCreate(u, UriKind.Absolute, out var uri);
+                value = Convert.ChangeType(uri, typeof(T)) as T;
                 return isValid && (uri?.Scheme == Uri.UriSchemeHttp || uri?.Scheme == Uri.UriSchemeHttps);
             case long l when typeof(T) == typeof(long):
                 value = Convert.ChangeType(l, typeof(T)) as T;
