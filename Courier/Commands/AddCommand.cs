@@ -18,9 +18,11 @@ public class AddCommand(IOptionsMonitor<FeedOptions> optionsMonitor, DiscordSock
         CancellationToken cancellationToken = new())
     {
         var commandOptions = command.Data.Options;
-        var interval = commandOptions.First(o => o.Name == "interval")?.Value is long l
-            ? l
-            : Feed.DefaultInterval;
+        var interval = command.Data.Options
+            .Where(option => option.Name == "interval")
+            .Select(option => option.Value)
+            .Cast<long>()
+            .FirstOrDefault(Feed.DefaultInterval);
 
         if (!Validate<string>(commandOptions.First(option => option.Name == "name"), out var name) ||
             name is null)

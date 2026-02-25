@@ -17,9 +17,11 @@ public class ListCommand(IOptionsMonitor<FeedOptions> optionsMonitor) : ICommand
         CancellationToken cancellationToken = new())
     {
         var feeds = optionsMonitor.CurrentValue.Feeds;
-        var page = command.Data.Options.First(o => o.Name == "page")?.Value is long l
-            ? l
-            : 1;
+        var page = command.Data.Options
+            .Where(option => option.Name == "page")
+            .Select(option => option.Value)
+            .Cast<long>()
+            .FirstOrDefault(1);
 
         if (command.Data.Options.First(option => option.Name == "channel")?.Value is not IGuildChannel channel)
         {
