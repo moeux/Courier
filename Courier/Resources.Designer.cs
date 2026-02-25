@@ -110,5 +110,11 @@ namespace Courier {
                 return ResourceManager.GetString("RemoveCommandFeedRemoved", resourceCulture);
             }
         }
+        
+        internal static string ListCommandNoFeedsFound {
+            get {
+                return ResourceManager.GetString("ListCommandNoFeedsFound", resourceCulture);
+            }
+        }
     }
 }

@@ -44,10 +44,15 @@ public class ListCommand(IOptionsMonitor<FeedOptions> optionsMonitor) : ICommand
             .WithFields(fields)
             .Build();
 
-        await command.RespondAsync(
-            embed: embed,
-            ephemeral: true,
-            options: new RequestOptions { CancelToken = cancellationToken });
+        if (embed.Fields.IsDefaultOrEmpty)
+        {
+            await command.RespondEphemeralAsync(
+                Resources.ListCommandNoFeedsFound,
+                cancellationToken: cancellationToken);
+            return;
+        }
+
+        await command.RespondEphemeralAsync(embed: embed, cancellationToken: cancellationToken);
     }
 
     public string CommandName => "list";
