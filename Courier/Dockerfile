@@ -9,13 +9,12 @@ WORKDIR /src
 COPY ["Courier/Courier.csproj", "Courier/"]
 COPY nuget.config .
 
-RUN --mount=type=secret,id=github_token \
-    --mount=type=secret,id=github_actor \
-    dotnet restore "Courier/Courier.csproj" \
-        --configfile nuget.config \
-        -p:Username="$(cat /run/secrets/github_actor)" \
-        -p:Password="$(cat /run/secrets/github_token)"
-        
+RUN --mount=type=secret,id=GITHUB_ACTOR \
+    --mount=type=secret,id=GITHUB_TOKEN \
+    export GITHUB_ACTOR=$(cat /run/secrets/GITHUB_ACTOR) && \
+    export GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN) && \
+    dotnet restore "Courier/Courier.csproj" --configfile nuget.config
+
 COPY . .
 WORKDIR "/src/Courier"
 RUN dotnet build "./Courier.csproj" -c $BUILD_CONFIGURATION -o /app/build
