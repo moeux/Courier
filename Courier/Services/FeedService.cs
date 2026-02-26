@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.ServiceModel.Syndication;
+using System.Timers;
 using System.Xml;
 using Courier.Configuration;
 using Courier.Extensions;
@@ -19,39 +20,74 @@ public class FeedService(
     DiscordSocketClient client)
     : BackgroundService
 {
-    private readonly ConcurrentDictionary<Feed, Timer> _feedTimerMap = new();
+    private readonly ConcurrentDictionary<Feed, (Timer Timer, ElapsedEventHandler Handler)> _feedTimers = new();
+    private readonly Lock _lock = new();
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        optionsMonitor.OnChange(options => UpdateTimers(options.Feeds, cancellationToken));
+        try
+        {
+            using var changeSubscription =
+                optionsMonitor.OnChange(options => UpdateTimers(options.Feeds, cancellationToken));
 
-        UpdateTimers(optionsMonitor.CurrentValue.Feeds, cancellationToken);
+            UpdateTimers(optionsMonitor.CurrentValue.Feeds, cancellationToken);
 
-        await Task.Delay(Timeout.Infinite, cancellationToken);
+            await Task.Delay(Timeout.Infinite, cancellationToken);
+        }
+        finally
+        {
+            DisposeAllTimers();
+        }
+    }
 
-        foreach (var timer in _feedTimerMap.Values) timer.Dispose();
+    private void DisposeAllTimers()
+    {
+        lock (_lock)
+        {
+            foreach (var tuple in _feedTimers.Values)
+            {
+                tuple.Timer.Elapsed -= tuple.Handler;
+                tuple.Timer.Dispose();
+            }
+
+            _feedTimers.Clear();
+        }
     }
 
     private void UpdateTimers(IEnumerable<Feed> feeds, CancellationToken cancellationToken = default)
     {
-        foreach (var timer in _feedTimerMap.Values) timer.Dispose();
-
-        _feedTimerMap.Clear();
-
-        foreach (var feed in feeds) _feedTimerMap[feed] = CreateTimer(feed, cancellationToken);
+        lock (_lock)
+        {
+            DisposeAllTimers();
+            foreach (var feed in feeds) _feedTimers[feed] = CreateTimer(feed, cancellationToken);
+        }
     }
 
-    private Timer CreateTimer(Feed feed, CancellationToken cancellationToken = default)
+    private (Timer Time, ElapsedEventHandler Handler) CreateTimer(
+        Feed feed,
+        CancellationToken cancellationToken = default)
     {
         var timer = new Timer(TimeSpan.FromMinutes(feed.Interval));
-        timer.Elapsed += async (sender, _) => await ProcessFeedAsync(sender as Timer, feed, cancellationToken);
+        ElapsedEventHandler handler = async void (sender, _) =>
+        {
+            try
+            {
+                await ProcessFeedAsync(sender as Timer, feed, cancellationToken);
+            }
+            catch (Exception e) when (e is not OperationCanceledException and not ObjectDisposedException)
+            {
+                logger.LogError(e, "Error processing feed '{Name}' ({Uri}).", feed.Name, feed.Uri);
+            }
+        };
+
+        timer.Elapsed += handler;
         timer.Enabled = true;
 
         logger.LogInformation(
             "Setup feed '{Name}' ({Uri}) with interval {Interval} minutes and channel #{ChannelId}.",
             feed.Name, feed.Uri, feed.Interval, feed.ChannelId);
 
-        return timer;
+        return (timer, handler);
     }
 
     private async Task ProcessFeedAsync(Timer? timer, Feed feed, CancellationToken cancellationToken)
