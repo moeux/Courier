@@ -7,6 +7,7 @@ services:
     user: "${UID}:${GID}"
 
     environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "1"
       Courier__Bot__Token: ${COURIER_BOT_TOKEN}
       Courier__Bot__FilePath: /app/data/commands
       Courier__Feed__FilePath: /app/data/feeds.json
