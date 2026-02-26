@@ -55,7 +55,7 @@
         <value>No feeds were found matching the criteria.</value>
     </data>
     <data name="RemoveCommandFeedRemoved" xml:space="preserve">
-        <value>Feed removed successfully</value>
+        <value>Feed removed successfully.</value>
     </data>
     <data name="ListCommandNoFeedsFound" xml:space="preserve">
         <value>There are no feeds matching the criteria.</value>

@@ -64,7 +64,7 @@ public class ListCommand(IOptionsMonitor<FeedOptions> optionsMonitor) : ICommand
             new EmbedFieldBuilder()
                 .WithName("Name")
                 .WithValue(feed.Name.Truncate(EmbedFieldBuilder.MaxFieldValueLength))
-                .WithIsInline(false),
+                .WithIsInline(true),
             new EmbedFieldBuilder()
                 .WithName("URI")
                 .WithValue(feed.Uri.Truncate(EmbedFieldBuilder.MaxFieldValueLength))
