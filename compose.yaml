@@ -4,9 +4,11 @@
     image: courier
     environment:
       Courier__Bot__Token: ""
+      Courier__Bot__FilePath: ${PWD}/commands
       Courier__Feed__FilePath: ${PWD}/feeds.json
     volumes:
       - ${PWD}/feeds.json:${PWD}/feeds.json:ro
+      - ${PWD}/commands:${PWD}/commands:ro
     build:
       context: .
       dockerfile: Courier/Dockerfile

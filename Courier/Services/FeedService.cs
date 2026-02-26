@@ -1,4 +1,6 @@
+using System.Collections.Concurrent;
 using System.ServiceModel.Syndication;
+using System.Timers;
 using System.Xml;
 using Courier.Configuration;
 using Courier.Extensions;
@@ -12,52 +14,105 @@ using Timer = System.Timers.Timer;
 
 namespace Courier.Services;
 
-public class FeedService(IOptions<FeedOptions> options, ILogger<FeedService> logger, DiscordSocketClient client)
+public class FeedService(
+    IOptionsMonitor<FeedOptions> optionsMonitor,
+    ILogger<FeedService> logger,
+    DiscordSocketClient client)
     : BackgroundService
 {
+    private readonly ConcurrentDictionary<Feed, (Timer Timer, ElapsedEventHandler Handler)> _feedTimers = new();
+    private readonly Lock _lock = new();
+
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        var feedTimerMap = options.Value.Feeds.ToDictionary(
-            feed => feed,
-            feed =>
-            {
-                var timer = new Timer(TimeSpan.FromMinutes(feed.Interval));
-                timer.Elapsed += async (sender, _) => await ProcessFeed(sender as Timer, feed, cancellationToken);
-                timer.Enabled = true;
+        try
+        {
+            using var changeSubscription =
+                optionsMonitor.OnChange(options => UpdateTimers(options.Feeds, cancellationToken));
 
-                logger.LogInformation(
-                    "Setup feed '{Name}' ({Uri}) with interval {Interval} minutes and channel #{ChannelId}.",
-                    feed.Name, feed.Uri, feed.Interval, feed.ChannelId);
+            UpdateTimers(optionsMonitor.CurrentValue.Feeds, cancellationToken);
 
-                return timer;
-            });
-
-        await Task.Delay(Timeout.Infinite, cancellationToken);
-
-        foreach (var timer in feedTimerMap.Values) timer.Dispose();
+            await Task.Delay(Timeout.Infinite, cancellationToken);
+        }
+        finally
+        {
+            DisposeAllTimers();
+        }
     }
 
-    private async Task ProcessFeed(Timer? timer, Feed feed, CancellationToken cancellationToken)
+    private void DisposeAllTimers()
+    {
+        lock (_lock)
+        {
+            foreach (var tuple in _feedTimers.Values)
+            {
+                tuple.Timer.Elapsed -= tuple.Handler;
+                tuple.Timer.Dispose();
+            }
+
+            _feedTimers.Clear();
+        }
+    }
+
+    private void UpdateTimers(IEnumerable<Feed> feeds, CancellationToken cancellationToken = default)
+    {
+        lock (_lock)
+        {
+            DisposeAllTimers();
+            foreach (var feed in feeds) _feedTimers[feed] = CreateTimer(feed, cancellationToken);
+        }
+    }
+
+    private (Timer Time, ElapsedEventHandler Handler) CreateTimer(
+        Feed feed,
+        CancellationToken cancellationToken = default)
+    {
+        var timer = new Timer(TimeSpan.FromMinutes(feed.Interval));
+        ElapsedEventHandler handler = async void (sender, _) =>
+        {
+            try
+            {
+                await ProcessFeedAsync(sender as Timer, feed, cancellationToken);
+            }
+            catch (Exception e) when (e is not OperationCanceledException and not ObjectDisposedException)
+            {
+                logger.LogError(e, "Error processing feed '{Name}' ({Uri}).", feed.Name, feed.Uri);
+            }
+        };
+
+        timer.Elapsed += handler;
+        timer.Enabled = true;
+
+        logger.LogInformation(
+            "Setup feed '{Name}' ({Uri}) with interval {Interval} minutes and channel #{ChannelId}.",
+            feed.Name, feed.Uri, feed.Interval, feed.ChannelId);
+
+        return (timer, handler);
+    }
+
+    private async Task ProcessFeedAsync(Timer? timer, Feed feed, CancellationToken cancellationToken)
     {
         timer?.Stop();
 
         try
         {
-            var response = await GetFeed(feed.Uri, cancellationToken);
+            var response = await GetFeedAsync(feed.Uri, cancellationToken);
             using var reader =
                 XmlReader.Create(new StringReader(response), new XmlReaderSettings { CloseInput = true });
             var syndicationFeed = SyndicationFeed.Load(reader);
 
             syndicationFeed.Items = syndicationFeed.Items
                 .Where(item => item.PublishDate <= DateTimeOffset.UtcNow)
-                .Where(item => item.PublishDate >= feed.LastUpdate).ToList();
+                .Where(item => item.PublishDate >= feed.LastUpdate)
+                .OrderBy(item => item.PublishDate)
+                .ToList();
 
             if (!syndicationFeed.Items.Any()) return;
 
             logger.LogInformation("Sending {Count} feed items to channel #{ChannelId}.",
                 syndicationFeed.Items.Count(), feed.ChannelId);
 
-            await SendMessage(feed.ChannelId, syndicationFeed, cancellationToken);
+            await SendMessageAsync(feed.ChannelId, syndicationFeed, cancellationToken);
             feed.LastUpdate = DateTimeOffset.UtcNow;
         }
         finally
@@ -66,14 +121,17 @@ public class FeedService(IOptions<FeedOptions> options, ILogger<FeedService> log
         }
     }
 
-    private static async Task<string> GetFeed(string uri, CancellationToken cancellationToken = default)
+    private static async Task<string> GetFeedAsync(string uri, CancellationToken cancellationToken = default)
     {
         using var client = new HttpClient();
         var response = await client.GetStringAsync(uri, cancellationToken);
         return response.Replace("&shy;", "");
     }
 
-    private async Task SendMessage(ulong channelId, SyndicationFeed feed, CancellationToken cancellationToken = default)
+    private async Task SendMessageAsync(
+        ulong channelId,
+        SyndicationFeed feed,
+        CancellationToken cancellationToken = default)
     {
         var channel = await client.GetChannelAsync(channelId, new RequestOptions
         {
@@ -99,16 +157,17 @@ public class FeedService(IOptions<FeedOptions> options, ILogger<FeedService> log
                 .WithTitle(item.Title.Text.ToMarkdown().Truncate(EmbedBuilder.MaxTitleLength))
                 .WithDescription(item.Summary.Text.ToMarkdown().Truncate(EmbedBuilder.MaxDescriptionLength))
                 .WithTimestamp(item.PublishDate)
-                .WithColor(Color.Purple);
+                .WithColor(new Color(242, 125, 22));
 
             embeds.Add(embedBuilder.Build());
         }
 
-        await textChannel.SendMessageAsync(embeds: embeds.ToArray(), options: new RequestOptions
-        {
-            Timeout = DiscordConfig.DefaultRequestTimeout,
-            CancelToken = cancellationToken,
-            RetryMode = RetryMode.AlwaysRetry
-        });
+        foreach (var embedArray in embeds.Chunk(DiscordConfig.MaxEmbedsPerMessage))
+            await textChannel.SendMessageAsync(embeds: embedArray, options: new RequestOptions
+            {
+                Timeout = DiscordConfig.DefaultRequestTimeout,
+                CancelToken = cancellationToken,
+                RetryMode = RetryMode.AlwaysRetry
+            });
     }
 }

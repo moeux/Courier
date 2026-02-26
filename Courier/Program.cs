@@ -1,4 +1,6 @@
-﻿using Courier.Configuration;
+﻿using AutoCommand.Handler;
+using Courier.Commands;
+using Courier.Configuration;
 using Courier.Services;
 using Discord;
 using Discord.WebSocket;
@@ -29,7 +31,11 @@ internal static class Program
 
         builder.Services
             .AddOptionsWithValidateOnStart<BotOptions>()
-            .Configure(options => { options.Token = builder.Configuration[ConfKeys.Bot.Token] ?? string.Empty; })
+            .Configure(options =>
+            {
+                options.Token = builder.Configuration[ConfKeys.Bot.Token] ?? string.Empty;
+                options.FilePath = builder.Configuration[ConfKeys.Bot.FilePath] ?? string.Empty;
+            })
             .Validate(options => !string.IsNullOrWhiteSpace(options.Token), Resources.TokenRequired);
 
         builder.Services
@@ -42,8 +48,11 @@ internal static class Program
                 Resources.FeedsRequired)
             .PostConfigure(options => { options.FilePath = Path.GetFullPath(options.FilePath); });
 
+        builder.Services.AddTransient<ICommandHandler, AddCommand>();
+        builder.Services.AddTransient<ICommandHandler, RemoveCommand>();
+        builder.Services.AddTransient<ICommandHandler, ListCommand>();
         builder.Services
-            .AddSingleton(new DiscordSocketConfig { GatewayIntents = GatewayIntents.None })
+            .AddSingleton(new DiscordSocketConfig { GatewayIntents = GatewayIntents.Guilds })
             .AddSingleton<DiscordSocketClient>();
         builder.Services.AddHostedService<BotService>();
         builder.Services.AddHostedService<FeedService>();

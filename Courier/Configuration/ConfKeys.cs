@@ -7,6 +7,7 @@ public static class ConfKeys
     public static class Bot
     {
         public const string Token = $"{Prefix}:{nameof(Bot)}:{nameof(Token)}";
+        public const string FilePath = $"{Prefix}:{nameof(Bot)}:{nameof(FilePath)}";
     }
 
     public static class Feed
