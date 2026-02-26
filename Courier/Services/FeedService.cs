@@ -162,11 +162,12 @@ public class FeedService(
             embeds.Add(embedBuilder.Build());
         }
 
-        await textChannel.SendMessageAsync(embeds: embeds.ToArray(), options: new RequestOptions
-        {
-            Timeout = DiscordConfig.DefaultRequestTimeout,
-            CancelToken = cancellationToken,
-            RetryMode = RetryMode.AlwaysRetry
-        });
+        foreach (var embedArray in embeds.Chunk(DiscordConfig.MaxEmbedsPerMessage))
+            await textChannel.SendMessageAsync(embeds: embedArray, options: new RequestOptions
+            {
+                Timeout = DiscordConfig.DefaultRequestTimeout,
+                CancelToken = cancellationToken,
+                RetryMode = RetryMode.AlwaysRetry
+            });
     }
 }
