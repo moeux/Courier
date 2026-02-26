@@ -1,14 +1,14 @@
-﻿services:
+services:
   courier:
     container_name: courier
-    image: courier
+    image: ghcr.io/moeux/courier/courier:latest
+    restart: unless-stopped
+
     environment:
-      Courier__Bot__Token: ""
-      Courier__Bot__FilePath: ${PWD}/commands
-      Courier__Feed__FilePath: ${PWD}/feeds.json
+      Courier__Bot__Token: ${COURIER_BOT_TOKEN}
+      Courier__Bot__FilePath: /app/data/commands
+      Courier__Feed__FilePath: /app/data/feeds.json
+
     volumes:
-      - ${PWD}/feeds.json:${PWD}/feeds.json:ro
-      - ${PWD}/commands:${PWD}/commands:ro
-    build:
-      context: .
-      dockerfile: Courier/Dockerfile
+      - ./data/feeds.json:/app/data/feeds.json
+      - ./data/commands:/app/data/commands:ro
