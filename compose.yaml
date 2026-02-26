@@ -10,20 +10,8 @@ services:
       Courier__Feed__FilePath: /app/data/feeds.json
 
     volumes:
-      - type: bind
-        source: ./data/feeds.json
-        target: /app/data/feeds.json
-        read_only: false
-
-      - type: bind
-        source: ./data/commands
-        target: /app/data/commands
-        read_only: true
-
-    read_only: true
-
-    tmpfs:
-      - /tmp
+      - ./data/feeds.json:/app/data/feeds.json
+      - ./data/commands:/app/data/commands:ro
 
     security_opt:
       - no-new-privileges:true
