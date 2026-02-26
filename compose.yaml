@@ -4,6 +4,8 @@ services:
     image: ghcr.io/moeux/courier/courier:latest
     restart: unless-stopped
 
+    user: "${UID}:${GID}"
+
     environment:
       Courier__Bot__Token: ${COURIER_BOT_TOKEN}
       Courier__Bot__FilePath: /app/data/commands
